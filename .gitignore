@@ -4,3 +4,6 @@ test-results/
 .data/
 .env
 *.log
+reports/
+allure-results/
+allure-report/

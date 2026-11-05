@@ -2,19 +2,25 @@
   "name": "playwright-quality-lab",
   "version": "1.0.0",
   "private": true,
-  "description": "Appointment booking application and risk-based Playwright quality engineering portfolio",
+  "description": "JavaScript Cucumber BDD and Playwright framework with Allure, parallel scenarios and Trace Viewer evidence",
   "type": "module",
   "engines": {
     "node": ">=24 <25"
   },
   "scripts": {
     "start": "node src/server.js",
-    "test": "playwright test",
-    "test:api": "playwright test --project=api",
-    "test:ui": "playwright test --project=chromium",
+    "test": "node scripts/run-bdd.js",
+    "test:api": "node scripts/run-bdd.js --tags @api",
+    "test:ui": "node scripts/run-bdd.js --tags @ui",
+    "test:headed": "node scripts/run-bdd.js --tags @ui --headed",
+    "test:serial": "node scripts/run-bdd.js --parallel 1",
     "test:faults": "node scripts/check-faults.js",
-    "report": "playwright show-report",
-    "check": "tsc --noEmit",
+    "test:dry-run": "node scripts/dry-run.js",
+    "check": "node scripts/check-source.js",
+    "evidence:verify": "node scripts/verify-evidence.js",
+    "report:generate": "allure generate reports/allure-results --clean -o reports/allure-report",
+    "report": "allure open reports/allure-report",
+    "trace": "playwright show-trace",
     "demo:capture": "node scripts/capture-demo.js"
   },
   "dependencies": {
@@ -23,9 +29,12 @@
     "zod": "^4.1.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.0",
     "@axe-core/playwright": "^4.10.0",
-    "@types/node": "^24.0.0",
-    "typescript": "^5.9.0"
+    "@cucumber/cucumber": "13.3.0",
+    "@playwright/test": "1.64.1",
+    "allure-commandline": "2.46.1",
+    "allure-cucumberjs": "3.14.0",
+    "fflate": "0.8.2",
+    "playwright": "1.64.1"
   }
 }

@@ -5,26 +5,48 @@ on:
 permissions:
   contents: read
 jobs:
-  playwright:
+  cucumber:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run check
+      - run: npm run test:dry-run
       - run: npm test
+      - run: npm run evidence:verify
+      - name: Ensure virtual display for headed checks
+        run: |
+          if ! command -v xvfb-run >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+          fi
+      - name: Verify three headed browser workers
+        run: xvfb-run --auto-servernum node scripts/run-bdd.js --headed --tags "@ui and @headed-smoke" --parallel 3
+        env:
+          BDD_REPORT_DIR: reports/headed-smoke
+      - name: Verify headed worker isolation and traces
+        run: npm run evidence:verify
+        env:
+          BDD_REPORT_DIR: reports/headed-smoke
       - run: npm run test:faults
-      - name: Upload reports and failure evidence
+      - name: Generate Allure HTML
+        if: always()
+        run: npm run report:generate
+      - name: Upload Allure, Cucumber and Trace Viewer evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: quality-evidence
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 7
+          path: reports/
+          retention-days: 3
+          compression-level: 9

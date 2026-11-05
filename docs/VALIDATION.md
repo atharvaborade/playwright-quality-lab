@@ -1,39 +1,57 @@
-# Validation evidence
+# JavaScript BDD validation evidence
 
-Recorded 5 November 2026 in the managed development environment. These initial results are local; the hosted verification section below records the subsequent GitHub Actions result.
+The current framework is JavaScript, Cucumber 13.3.0 and Playwright 1.64.1 with Allure Cucumber 3.14.0 and Allure CLI 2.46.1. It replaces the earlier TypeScript/Playwright Test suite. Historical counts are not current coverage claims.
 
-## Prepublication recheck
+## Executed local baseline
 
-The publication recheck passed type checking, all24 baseline tests (8.4seconds locally), and both seeded-fault experiments. No application source changes were needed. GitHub-hosted results are tracked separately in the repository Actions tab.
+- Node.js 24.22.1; Java 21; system Chromium selected with `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
+- JavaScript syntax check passed; no authored `.ts`/`.tsx` files remain.
+- Cucumber dry-run resolved **93 scenarios and 586 steps**, without undefined or ambiguous definitions. Dry-run entries are skipped by design and are not counted as execution evidence.
+- Full execution: **93 scenarios passed; 586 steps passed**;0 failed/undefined/pending/skipped scenarios; no retries.
+- Scenario composition: **73 API + 20 UI**.
+- Three workers; approximately 41.5seconds wall time versus 118.3seconds summed scenario execution in this environment. This is a run observation, not a performance benchmark.
+- Allure HTML generated successfully. Its summary contains 93 passed,0 failed,0 broken,0 skipped and0 unknown.
 
-## Baseline
+## Isolation and recorded evidence
 
-- Node.js v24.22.1
-- Playwright 1.64.1 (resolved in the committed lockfile)
-- Chromium: system `/usr/bin/chromium`, selected with `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`
-- Three workers; no retries in the local run
-- `npm run check`: passed
-- `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm test`: **24 passed**, 0 failed, 0 skipped, 0 flaky; approximately 8.8 seconds in this environment
-- 18 API tests and 6 browser tests
+`npm run evidence:verify` inspected the fresh results and artifacts:
 
-Runtime is an observation, not a performance benchmark or guarantee. CI installs the browser version matched to Playwright rather than relying on this machine's system browser.
+| Evidence | Observed |
+|---|---:|
+| Cucumber workers observed |3 |
+| Cross-worker scenario intervals overlap | Yes |
+| Unique browser contexts |185 |
+| Valid Playwright trace archives |370 |
+| Step screenshots |91 |
+| Step-labelled network summary entries |407 |
+| Native Trace Viewer network records |408 |
+| Browser DOM snapshots |750 |
+| Allure scenario result files |93 |
 
-## Fault experiments
+Each context has separate browser and native API traces. An API-only scenario can have a blank unused browser page; its `*-api.zip` contains recorded HTTP actions. The verifier checks passing Cucumber/Allure results, fresh scenario metadata, unique context IDs, actual worker overlap, valid grouped traces, DOM snapshots and native network records.
 
-`npm run test:faults` completed successfully after confirming two intentional invariant-test failures:
+Allure's overview and a booking scenario detail were opened in a real browser. The rendered report showed Gherkin steps and per-step screenshots. Report and Trace Viewer screenshots are under `docs/screenshots/`.
 
-| Seeded fault | Expected response | Faulty response | Result |
+Headed execution is configured for user desktops. This managed machine has no Xvfb/desktop session for a local headed run; parallelism was observed through overlapping headless workers and isolated contexts. Do not describe that as a visually observed headed execution on this machine.
+
+## Seeded defects
+
+Both named BDD fault experiments completed successfully through the harness:
+
+| Defect | Required result | Faulty result | Detection |
 |---|---:|---:|---|
-| Missing active-slot uniqueness | 409 | 201 | Conflict assertion detected fault |
-| Missing cancellation ownership check | 404 | 204 | Ownership assertion detected fault |
+| Missing active provider/time uniqueness |409 |201 | Intended HTTP assertion failed |
+| Missing cancellation ownership check |404 |204 | Intended HTTP assertion failed |
 
-These failures are isolated from the passing baseline report. Individual fault test runs exit 1 by design; the harness exits 0 only when their reports match the intended assertion failures. They are neither skipped tests nor unresolved baseline failures.
+The fault runs contain one intentionally failed scenario each. They are kept under `reports/faults/`; the baseline Allure report remains green and separate. The harness rejects zero/multiple scenarios, setup errors and wrong assertion failures. No production mode can enable these fault flags.
 
-## Findings during development
+## Defects fixed during migration
 
-1. **Real accessibility defect:** the brand link's accessible name omitted visible label content. Axe reported `label-content-name-mismatch`. Removing the overriding label and marking the decorative initial as hidden corrected the accessible name; both accessibility checks then passed.
-2. **Test-isolation defect:** supposedly anonymous API clients inherited the suite's authenticated storage state. Explicit empty cookie/origin state fixed the test setup. This was not an application authentication bypass.
-3. **Journey expectation:** reloading resets the selected coach to the default. The test now explicitly reselects the booked coach before asserting that cancellation releases that coach's slot.
+1. **Stale provider response:** a delayed response from a previously selected coach could replace the latest coach's times. Responses are now applied only for the latest selection/request.
+2. **Exhausted availability:** generic button cleanup could reenable booking after the final available slot was consumed. Booking enablement now follows actual availability and in-progress state.
+3. **Oversized JSON:** requests over the 10kb limit returned 500. They now receive 413 with a client-facing error.
+
+The BDD suite includes deterministic regressions for all three. Browser response interception reaches race/empty-list states deterministically; real API scenarios separately verify SQLite booking and availability rules.
 
 ## Reproduce
 
@@ -41,16 +59,17 @@ These failures are isolated from the passing baseline report. Individual fault t
 npm ci
 npx playwright install --with-deps chromium
 npm run check
+npm run test:dry-run
 npm test
+npm run evidence:verify
 npm run test:faults
+npm run report:generate
 ```
 
-Reports are regenerated under ignored `playwright-report/` and `test-results/`. The committed screenshots come from `npm run demo:capture`, which starts a separate temporary database and removes it afterward.
+Reports are regenerated per run under ignored `reports/`; generated screenshots can be refreshed with `npm run demo:capture`. Use synthetic accounts only. Trace archives can include synthetic credentials and sessions even though the network summaries redact them.
 
-## GitHub-hosted verification
+## Remote verification and limits
 
-[Verified Quality checks run](https://github.com/atharvaborade/playwright-quality-lab/actions/runs/42113819326) for commit8bbf5ee completed successfully. The job ran type checking, the24-test baseline suite and both seeded-fault experiments. Its `quality-evidence` artifact contains reports and failure evidence from the intentional fault checks. Public application hosting remains separate from publishing source code.
+The migrated GitHub workflow is configured for the commands above and artifact retention. Its hosted result must be observed after publication; previous CI successes apply to the previous implementation.
 
-## Not verified
-
-Firefox/WebKit, complete screen-reader accessibility, load/performance thresholds, and public application hosting. See the test strategy for scope boundaries.
+See `USE-CASE-COVERAGE.md` for the current capability map and remaining boundaries. This run does not establish every possible input, full WCAG conformance, Firefox/WebKit coverage, load capacity or production suitability. The separate Cypress repository is future work.

@@ -1,5 +1,6 @@
 const $ = id => document.getElementById(id);
 let registering = true, selected = 'maya', providers = [];
+let slotRequest = 0, availableSlotCount = 0, bookingInProgress = false;
 const dateLabel = slot => new Intl.DateTimeFormat('en-GB', {dateStyle:'medium',timeStyle:'short',timeZone:'UTC'}).format(new Date(slot)) + ' UTC';
 async function api(path, options = {}) {
   const response = await fetch('/api' + path, { ...options, headers: {'Content-Type':'application/json',...options.headers} });
@@ -9,15 +10,27 @@ async function api(path, options = {}) {
 }
 function notice(message) { $('notice').textContent = message; }
 async function guarded(button, action) {
+  const booking = button === $('book');
+  if (booking) bookingInProgress = true;
   button.disabled = true;
-  try { await action(); } catch (error) { notice(error.message); } finally { button.disabled = false; }
+  try { await action(); } catch (error) { notice(error.message); } finally {
+    if (booking) { bookingInProgress = false; button.disabled = availableSlotCount === 0; }
+    else button.disabled = false;
+  }
 }
 async function slots() {
-  const data = await api('/slots?provider=' + selected);
-  $('selection').textContent = providers.find(p => p.id === selected).name + ' · 60 minutes';
+  const request = ++slotRequest;
+  const providerId = selected;
+  availableSlotCount = 0;
+  $('book').disabled = true;
+  $('selection').textContent = providers.find(p => p.id === providerId).name + ' · loading times';
+  const data = await api('/slots?provider=' + providerId);
+  if (request !== slotRequest || providerId !== selected) return;
+  availableSlotCount = data.slots.length;
+  $('selection').textContent = providers.find(p => p.id === providerId).name + ' · 60 minutes';
   $('slot').replaceChildren(...data.slots.map(slot => { const option = document.createElement('option'); option.value = slot; option.textContent = dateLabel(slot); return option; }));
   if (!data.slots.length) { const option = document.createElement('option'); option.textContent='No times available'; $('slot').append(option); }
-  $('book').disabled = !data.slots.length;
+  $('book').disabled = !data.slots.length || bookingInProgress;
 }
 async function appointments() {
   const data = await api('/appointments');

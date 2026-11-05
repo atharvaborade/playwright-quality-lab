@@ -125,6 +125,7 @@ app.get('/api/admin/summary', auth, (req, res) => {
 app.use(express.static(resolve('public')));
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Endpoint not found' }));
 app.use((error, _req, res, _next) => {
+  if (error.type === 'entity.too.large') return res.status(413).json({ error: 'Request body exceeds the 10kb limit' });
   if (error.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON' });
   console.error('Request failed:', error.code || error.name); res.status(500).json({ error: 'Unexpected server error' });
 });

@@ -1,13 +1,11 @@
-# Delivery plan
+# JavaScript BDD migration plan
 
-1. Build an appointment-booking product: account creation, sign-in, member/admin roles, scheduling and cancellation, persistent SQLite data.
-2. Cover business risks through API tests; cover critical journeys and accessibility through browser tests. Isolate data per test and authenticate through fixtures.
-3. Demonstrate effectiveness with two deliberate test-only faults: double booking and cross-account cancellation. Require relevant tests to fail against each faulty server.
-4. Configure CI, retain failure evidence, write a test strategy and document real execution results.
-5. Capture the product and publish to its own GitHub repository.
+1. Replace the authored TypeScript tests/config with JavaScript Cucumber features, steps, World and hooks.
+2. Map current application use cases to positive, negative and browser scenarios; retain meaningful booking/ownership fault experiments.
+3. Run scenarios in isolated parallel browser contexts, preserve Allure reports and per-context browser/API traces.
+4. Verify real execution, report rendering, trace contents, worker overlap, screenshots and defect detection.
+5. Publish the framework, verify GitHub Actions, update the portfolio claims/links and refresh screenshots.
 
-No paid services, employer code, or real customer data. This is a portfolio lab, not a production medical system.
+Steps 1–4 are locally validated. Publication and hosted CI are the remaining migration checks. `VALIDATION.md` contains measured local results; the Actions tab will provide hosted evidence.
 
-## Current status
-
-Implementation, local validation, screenshots and documentation are complete:24 baseline checks pass and both fault experiments are detected. Source repository: https://github.com/atharvaborade/playwright-quality-lab. All five delivery steps are complete. Hosted checks passed in [this run](https://github.com/atharvaborade/playwright-quality-lab/actions/runs/42113819326); local and hosted evidence are recorded separately in VALIDATION.md.
+No paid services, employer code or real customer data are required. A separate Cypress implementation will be considered after this migration is complete.

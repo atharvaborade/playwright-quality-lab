@@ -1,97 +1,163 @@
-# Slotwise · Playwright Quality Engineering Lab
+# Slotwise · JavaScript BDD Quality Engineering Lab
 
 [![Quality checks](https://github.com/atharvaborade/playwright-quality-lab/actions/workflows/quality.yml/badge.svg)](https://github.com/atharvaborade/playwright-quality-lab/actions/workflows/quality.yml)
 
-A working appointment-booking product paired with a risk-based automation suite. Built as an independent quality engineering portfolio project using synthetic data.
-
-**Focus:** demonstrate how tests protect booking integrity, account ownership and the user journey—and prove that selected tests detect deliberately introduced faults.
+A working booking application and a **JavaScript + Cucumber BDD + Playwright** automation framework. Gherkin features describe behaviour; JavaScript steps exercise the UI and API; Allure explains the results; Playwright traces preserve the recorded browser history.
 
 ![Slotwise booking application](docs/screenshots/booking.png)
 
-[View the welcome screen](docs/screenshots/welcome.png) · [Quality checks](https://github.com/atharvaborade/playwright-quality-lab/actions)
+[Welcome screen](docs/screenshots/welcome.png) · [Allure report screenshot](docs/screenshots/allure-report.png) · [Trace Viewer screenshot](docs/screenshots/trace-viewer.png) · [Use-case coverage](docs/USE-CASE-COVERAGE.md) · [Quality checks](https://github.com/atharvaborade/playwright-quality-lab/actions)
 
-## Product
+## What you install on your computer
 
-Members create an account, choose a coach, book a UTC appointment, and cancel it. The application persists data in SQLite and enforces authorization in the API. Passwords use salted scrypt hashes; sessions use opaque HttpOnly cookies with hashed tokens stored server-side.
+- **Node.js 24 LTS**, including npm. The app uses Node's built-in SQLite API.
+- **Git**, to clone the source (or download and extract the repository ZIP).
+- A Playwright **Chromium** browser, installed with the command below.
+- **Java 17 or newer** for generating/opening the Allure 2 HTML report. Java 21 is used in CI. `java -version` should work in your terminal.
 
-The application runs locally without a cloud subscription, API key, Docker or external database. There is no permanent hosted website.
+The app and tests need no paid API, Docker, external database or hosting account. A normal desktop is required for visible browser windows; CI runs headlessly. Node.js and Java are installed on your own system once; `npm ci` installs this project's JavaScript dependencies.
 
-## Run
-
-Install **Node.js 24 LTS** (the built-in SQLite API is required), then:
+## First-time setup
 
 ```sh
 git clone https://github.com/atharvaborade/playwright-quality-lab.git
 cd playwright-quality-lab
+node --version
 npm ci
+npx playwright install chromium
+```
+
+On Linux, install browser system dependencies with `npx playwright install --with-deps chromium` if needed. A compatible existing system browser can be selected with `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. The lockfile pins the dependency versions; use `npm ci` after pulling updates.
+
+## Run the application
+
+```sh
 npm start
 ```
 
-Open `http://localhost:3000` on your computer. Create your own account with a password of at least 12 characters. SQLite stores local data under ignored `.data/`. Stop the server with Ctrl+C; data remains for the next run.
+Open `http://localhost:3000` on your computer. Register a synthetic account with a password of at least 12 characters. You can select a coach, book an available time and cancel it. All displayed times are UTC. The ignored `.data/` directory retains your local database. Stop with Ctrl+C.
 
-All booking times are UTC. The UI offers seven days of availability; the API accepts supported whole-hour slots up to 90 days ahead. Coaches and accounts are fictional.
+There is no permanent hosted booking service. The portfolio links to this runnable source project.
 
-## Run the quality checks
+## Run the automation
 
 ```sh
-npx playwright install chromium
 npm run check
 npm test
-npm run test:faults
+```
+
+`npm test` starts a healthy temporary app with a fresh SQLite database, runs Cucumber scenarios using **three parallel workers**, preserves reports and traces, then stops the server and removes the temporary database. It does not modify your normal `.data/` demo database.
+
+```sh
+npm run test:api       # API scenarios
+npm run test:ui        # UI scenarios
+npm run test:serial    # one worker
+npm run test:headed   # UI scenarios in separate visible browser processes
+```
+
+To watch three workers:
+
+```sh
+npm run test:headed -- --parallel 3
+```
+
+Each worker owns its browser; every scenario gets a fresh isolated BrowserContext, cookies and account data. Scenarios are distributed between workers, rather than executing the same scenario in every window. Browser windows close when execution finishes. For easier observation, slow down browser actions. In Windows PowerShell:
+
+```powershell
+$env:PLAYWRIGHT_SLOW_MO="250"
+npm run test:headed -- --parallel 3
+Remove-Item Env:PLAYWRIGHT_SLOW_MO
+```
+
+On macOS/Linux:
+
+```sh
+PLAYWRIGHT_SLOW_MO=250 npm run test:headed -- --parallel 3
+```
+
+Run a specific scenario group using its Cucumber tag:
+
+```sh
+npm test -- --tags "@authentication"
+npm test -- --tags "@booking"
+npm test -- --tags "@ui and not @accessibility"
+```
+
+See the feature files for available tags. `npm run test:dry-run` checks scenario/step matching without executing browser actions. The CLI rejects a normal execution that selects zero scenarios.
+
+## Open the Allure report
+
+After a test run:
+
+```sh
+java -version
+npm run report:generate
 npm run report
 ```
 
-On Linux, browser system dependencies may also be needed: `npx playwright install --with-deps chromium`. On a machine with a compatible system Chromium, `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` can select its executable. CI installs Playwright's matching browser build.
+The generator reads `reports/allure-results/` and writes `reports/allure-report/`. Open it through `npm run report`, rather than double-clicking its HTML file. Allure groups scenarios and steps and includes screenshots, network summaries, metadata and trace ZIP attachments. The baseline report remains separate from intentional fault-experiment results. CI also checks three headed UI scenarios under Xvfb, with separate evidence in `reports/headed-smoke/`.
 
-Tests launch their own app on port 3100 with a disposable database, so they do not modify your local demo accounts. Change `TEST_PORT` if necessary. Fault experiments use ports 3201 and 3202. Do not run duplicate suites on the same ports.
+`reports/cucumber.json` is the machine-readable Cucumber result. `npm run evidence:verify` verifies successful scenario counts, Allure results, unique contexts, worker overlap and trace artifacts for a full parallel baseline run.
 
-| Capability | Evidence |
-|---|---|
-| UI automation | Registration, sign-in/out, booking, reload persistence, cancellation, conflict feedback |
-| API automation | Authentication, role authorization, invalid input, ownership and booking state |
-| Parallel safety | Unique per-test accounts, worker-specific API slots, temporary database per server |
-| Concurrency | Two accounts compete for one provider/time; exactly one booking succeeds |
-| Accessibility | Axe WCAG A/AA scans on registration and booking screens; keyboard and mobile checks |
-| Failure diagnosis | HTML/JSON reports, retained failure traces and screenshots |
-| Test effectiveness | Two targeted test-only faults must be caught by their intended assertions |
-| CI | GitHub Actions installs dependencies, checks types, runs baseline and fault experiments, uploads evidence |
+## Debug with Playwright Trace Viewer
 
-## Seeded fault experiments
-
-`npm run test:faults` temporarily enables one broken behaviour per isolated test server:
-
-1. **Double booking:** omit the unique active provider/time constraint. The conflict test must observe 201 where 409 was required.
-2. **Ownership bypass:** omit the cancellation ownership check. The isolation test must observe 204 where 404 was required.
-
-The harness accepts only the named test's intended assertion failure. An unavailable browser, startup error, missing report or unrelated failure does not count as detection. These two examples are not a comprehensive mutation score.
-
-Fault flags are refused outside `NODE_ENV=test`. Normal `npm start` uses the baseline behaviour. The test administrator credential in the configuration is synthetic and applies only to disposable test databases; no administrator is created in a normal local run.
-
-## Reports and documentation
-
-- [Delivery plan](docs/PLAN.md)
-- [Test strategy and coverage decisions](docs/TEST-STRATEGY.md)
-- [Architecture and engineering tradeoffs](docs/ARCHITECTURE.md)
-- [Validation results and findings](docs/VALIDATION.md)
-- [Interview walkthrough](docs/WALKTHROUGH.md)
-
-In GitHub Actions, open **Actions → Quality checks → a completed run → quality-evidence** to download reports. Local HTML reports open with `npm run report`. Artifacts include synthetic authentication/session data: treat downloaded traces as test evidence and do not reuse their accounts elsewhere.
-
-## Layout
+Every scenario retains evidence under:
 
 ```text
-src/server.js            Express API, auth, persistence and scheduling invariants
-public/                  Accessible responsive browser application
-tests/fixtures/          Account factories, authenticated storage state, future slots
-tests/api/               API risk checks
-tests/ui/                Browser journeys and accessibility checks
-scripts/check-faults.js  Verifies intended failures against seeded faults
-.github/workflows/      CI and evidence retention
-docs/                    Strategy, decisions, findings and walkthrough
+reports/artifacts/<scenario-name>-<unique-id>/
+  trace.zip                 primary browser DOM/action recording
+  trace-api.zip             primary native API request recording
+  trace-<actor>.zip          additional actor browser recording
+  trace-<actor>-api.zip      additional actor native HTTP recording
+  network.json              request/response summaries, labelled by step
+  metadata.json             scenario, worker, unique contexts, timing, outcome
+  <step>.png                screenshots for visited browser pages
 ```
 
-## Scope and limitations
+Copy a real trace path from your generated report and run:
 
-This is a portfolio lab, not a production booking platform. Current browser execution targets Chromium. Automated accessibility scans do not establish full WCAG conformance. GitHub-hosted type checking, the24-test baseline suite and both seeded-fault experiments passed in [this verified run](https://github.com/atharvaborade/playwright-quality-lab/actions/runs/42113819326). See the strategy for uncovered risks and deployment limitations.
+```sh
+npm run trace -- "reports/artifacts/<actual-scenario-folder>/trace.zip"
+```
 
-No employer code, real customer data, paid services or invented performance metrics are included.
+Trace Viewer lets you select a recorded action, inspect before/after DOM snapshots and screenshots, and examine recorded network requests, responses and other action details. Gherkin steps appear as trace groups. Additional actor contexts have their own trace files. For an API-only scenario, open its `*-api.zip` trace to inspect HTTP calls; its unused browser page may be blank. For a UI scenario, `trace.zip` contains the DOM snapshots and browser network traffic.
+
+This is recorded inspection: it does not rewind the live database or reverse an appointment you actually booked. Allure and Trace Viewer serve different purposes—Allure explains scenario/step outcomes; Trace Viewer investigates recorded Playwright actions. Attachments contain synthetic test traffic; do not point the suite at real customer accounts or publish traces containing personal sessions.
+
+## Coverage and fault experiments
+
+The migrated baseline currently contains **93 scenarios: 73 API and 20 UI**, expanding to 586 Gherkin steps. These counts come from an executed run; see the validation record for outcomes.
+
+The feature files map current use cases across identity, session protection, providers/availability, booking, cancellation, roles, validation and browser journeys. They include negative cases and regression checks for rapid provider switching, exhausted availability and oversized JSON requests.
+
+```sh
+npm run test:faults
+```
+
+The harness starts isolated faulty app instances. `@fault-double-booking` must detect a second reservation being accepted; `@fault-ownership` must detect a cross-account cancellation being accepted. It validates the named scenario and intended HTTP assertion failure. Setup errors or missing reports do not count as defect detection. Faults are refused outside test mode.
+
+See [coverage and limits](docs/USE-CASE-COVERAGE.md), [test strategy](docs/TEST-STRATEGY.md), and [recorded validation](docs/VALIDATION.md). Covering current use cases is not a claim to test every possible input, browser, timing or production security condition.
+
+## CI and artifacts
+
+GitHub Actions installs Node, Java, project dependencies and Chromium; executes the JavaScript checks, BDD baseline, evidence verification and fault experiments; generates Allure HTML; and uploads the reports even on failure. Open **Actions → Quality checks → a run → quality-evidence** to download the evidence. CI artifacts are retained for three days; download any run you want to keep. Generated reports and local databases are ignored by Git.
+
+The original TypeScript tests have been replaced by JavaScript Cucumber scenarios. Dependency packages may ship their own type definitions; the authored application and framework files are JavaScript.
+
+## Structure
+
+```text
+src/                         booking API and SQLite persistence
+public/                      browser application
+features/*.feature           business-readable Gherkin scenarios
+features/steps/*.js           JavaScript step definitions
+features/support/            World, hooks, isolation, traces and attachments
+cucumber.mjs                 Cucumber configuration
+scripts/run-bdd.js            temporary app and parallel runner orchestration
+scripts/check-faults.js       intended-defect verification
+scripts/verify-evidence.js    reporting/trace/isolation verification
+.github/workflows/quality.yml CI execution and artifact retention
+docs/                        strategy, coverage, architecture and walkthrough
+```
+
+This is an independent portfolio lab using fictional coaches and synthetic accounts. It is not employer code or a production scheduling service. A separate Cypress implementation is planned for a later repository; it is not part of this migration.
