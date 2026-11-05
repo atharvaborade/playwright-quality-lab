@@ -42,6 +42,9 @@ jobs:
       - name: Generate Allure HTML
         if: always()
         run: npm run report:generate
+      - name: Summarize scenarios and debugging evidence
+        if: always()
+        run: node scripts/summarize-ci.js
       - name: Upload Allure, Cucumber and Trace Viewer evidence
         if: always()
         uses: actions/upload-artifact@v4
