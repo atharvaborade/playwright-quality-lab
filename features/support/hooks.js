@@ -39,7 +39,29 @@ AfterStep(async function ({ pickleStep, result }) {
       const fileName = `${String(this.stepNumber).padStart(2, '0')}-${safeName(pickleStep.text)}-page-${index + 1}.png`;
       const headed = process.env.BDD_HEADED === 'true';
       if (headed) await page.bringToFront();
-      const buffer = await page.screenshot({ path: join(this.artifactDir, fileName), fullPage: !headed, timeout: 10000 });
+      let buffer;
+      try {
+        buffer = await page.screenshot({ path: join(this.artifactDir, fileName), fullPage: !headed, timeout: 10000 });
+      } catch (error) {
+        if (!headed || !error.message.includes('Unable to capture screenshot')) throw error;
+        // Some Xvfb compositors expose the native view but not a screenshot surface.
+        // Capture that real viewport through Chromium's supported CDP view mode.
+        const session = await this.context.newCDPSession(page);
+        try {
+          const { windowId } = await session.send('Browser.getWindowForTarget');
+          await session.send('Browser.setWindowBounds', { windowId, bounds: { windowState: 'normal' } });
+          await page.bringToFront();
+          const capture = await session.send('Page.captureScreenshot', { format: 'png', fromSurface: false, captureBeyondViewport: false });
+          buffer = Buffer.from(capture.data, 'base64');
+          if (buffer.length < 100) throw new Error('Native view did not produce a usable PNG');
+          await writeFile(join(this.artifactDir, fileName), buffer);
+          await this.attach('Native Chromium viewport capture used after a virtual-display surface error.', { mediaType: 'text/plain', fileName: 'capture-mode.txt' });
+        } catch (fallbackError) {
+          let diagnostic = {};
+          try { diagnostic = await page.evaluate(() => ({ visibility: document.visibilityState, width: innerWidth, height: innerHeight })); } catch {}
+          throw new Error(`Headed screenshot capture failed: ${fallbackError.message}; viewport=${JSON.stringify(diagnostic)}`);
+        } finally { await session.detach(); }
+      }
       await this.attach(buffer, { mediaType: 'image/png', fileName });
     } catch (error) { errors.push(`Screenshot: ${error.message}`); }
   }
