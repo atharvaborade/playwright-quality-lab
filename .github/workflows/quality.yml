@@ -26,12 +26,12 @@ jobs:
       - run: npm run evidence:verify
       - name: Ensure virtual display for headed checks
         run: |
-          if ! command -v xvfb-run >/dev/null; then
+          if ! command -v xvfb-run >/dev/null || ! command -v xauth >/dev/null; then
             sudo apt-get update
-            sudo apt-get install -y xvfb
+            sudo apt-get install -y xvfb xauth
           fi
       - name: Verify three headed browser workers
-        run: xvfb-run --auto-servernum node scripts/run-bdd.js --headed --tags "@ui and @headed-smoke" --parallel 3
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" node scripts/run-bdd.js --headed --tags "@ui and @headed-smoke" --parallel 3
         env:
           BDD_REPORT_DIR: reports/headed-smoke
       - name: Verify headed worker isolation and traces
@@ -45,11 +45,14 @@ jobs:
       - name: Summarize scenarios and debugging evidence
         if: always()
         run: node scripts/summarize-ci.js
+      - name: Package one copy of report attachments
+        if: always()
+        run: node scripts/package-ci-evidence.js
       - name: Upload Allure, Cucumber and Trace Viewer evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: quality-evidence
-          path: reports/
+          path: reports/ci-evidence/
           retention-days: 3
           compression-level: 9

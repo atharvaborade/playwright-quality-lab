@@ -37,7 +37,9 @@ AfterStep(async function ({ pickleStep, result }) {
     if (page.isClosed() || page.url() === 'about:blank') continue;
     try {
       const fileName = `${String(this.stepNumber).padStart(2, '0')}-${safeName(pickleStep.text)}-page-${index + 1}.png`;
-      const buffer = await page.screenshot({ path: join(this.artifactDir, fileName), fullPage: true, timeout: 10000 });
+      const headed = process.env.BDD_HEADED === 'true';
+      if (headed) await page.bringToFront();
+      const buffer = await page.screenshot({ path: join(this.artifactDir, fileName), fullPage: !headed, timeout: 10000 });
       await this.attach(buffer, { mediaType: 'image/png', fileName });
     } catch (error) { errors.push(`Screenshot: ${error.message}`); }
   }

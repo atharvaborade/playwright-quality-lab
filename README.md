@@ -120,7 +120,7 @@ Copy a real trace path from your generated report and run:
 npm run trace -- "reports/artifacts/<actual-scenario-folder>/trace.zip"
 ```
 
-Trace Viewer lets you select a recorded action, inspect before/after DOM snapshots and screenshots, and examine recorded network requests, responses and other action details. Gherkin steps appear as trace groups. Additional actor contexts have their own trace files. For an API-only scenario, open its `*-api.zip` trace to inspect HTTP calls; its unused browser page may be blank. For a UI scenario, `trace.zip` contains the DOM snapshots and browser network traffic.
+Trace Viewer lets you select a recorded action, inspect before/after DOM snapshots and screenshots, and examine recorded network requests, responses and other action details. Gherkin steps appear as trace groups. Headed captures show the visible viewport; headless captures use the full page. DOM snapshots remain available in the browser trace. Additional actor contexts have their own trace files. For an API-only scenario, open its `*-api.zip` trace to inspect HTTP calls; its unused browser page may be blank. For a UI scenario, `trace.zip` contains the DOM snapshots and browser network traffic.
 
 This is recorded inspection: it does not rewind the live database or reverse an appointment you actually booked. Allure and Trace Viewer serve different purposes—Allure explains scenario/step outcomes; Trace Viewer investigates recorded Playwright actions. Attachments contain synthetic test traffic; do not point the suite at real customer accounts or publish traces containing personal sessions.
 
@@ -140,7 +140,7 @@ See [coverage and limits](docs/USE-CASE-COVERAGE.md), [test strategy](docs/TEST-
 
 ## CI and artifacts
 
-GitHub Actions installs Node, Java, project dependencies and Chromium; executes the JavaScript checks, BDD baseline, evidence verification and fault experiments; generates Allure HTML; and uploads the reports even on failure. Open **Actions → Quality checks → a run → quality-evidence** to download the evidence. CI artifacts are retained for three days; download any run you want to keep. Generated reports and local databases are ignored by Git.
+GitHub Actions installs Node, Java, project dependencies and Chromium; executes the JavaScript checks, BDD baseline, evidence verification and fault experiments; generates Allure HTML; and uploads the reports even on failure. Open **Actions → Quality checks → a run → quality-evidence** to download the evidence. The CI bundle includes the self-contained Allure report; download a baseline trace through its attachments, then open that ZIP with Trace Viewer. Duplicate raw baseline attachments are omitted from the bundle. Local `reports/artifacts/` still contains the original scenario folders. CI artifacts are retained for three days; download any run you want to keep. Generated reports and local databases are ignored by Git.
 
 The original TypeScript tests have been replaced by JavaScript Cucumber scenarios. Dependency packages may ship their own type definitions; the authored application and framework files are JavaScript.
 
