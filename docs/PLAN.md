@@ -6,6 +6,6 @@
 4. Verify real execution, report rendering, trace contents, worker overlap, screenshots and defect detection.
 5. Publish the framework, verify GitHub Actions, update the portfolio claims/links and refresh screenshots.
 
-Steps 1–4 are locally validated. Publication and hosted CI are the remaining migration checks. `VALIDATION.md` contains measured local results; the Actions tab will provide hosted evidence.
+All five migration steps are complete. Hosted BDD, evidence, headed-browser and fault checks passed in https://github.com/atharvaborade/playwright-quality-lab/actions/runs/42121961009. `VALIDATION.md` contains measured local results; the Actions tab will provide hosted evidence.
 
 No paid services, employer code or real customer data are required. A separate Cypress implementation will be considered after this migration is complete.

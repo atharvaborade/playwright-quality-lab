@@ -70,6 +70,6 @@ Reports are regenerated per run under ignored `reports/`; generated screenshots 
 
 ## Remote verification and limits
 
-The migrated GitHub workflow is configured for the commands above and artifact retention. Its hosted result must be observed after publication; previous CI successes apply to the previous implementation.
+The migrated GitHub workflow passed: https://github.com/atharvaborade/playwright-quality-lab/actions/runs/42121961009. It verified the93-scenario baseline, parallel/trace evidence, three headed UI scenarios under Xvfb with three observed workers, and both targeted fault experiments. Allure HTML generation and evidence upload succeeded. Headed screenshots use a native Chromium view fallback when the virtual-display compositor cannot supply a screenshot surface.
 
 See `USE-CASE-COVERAGE.md` for the current capability map and remaining boundaries. This run does not establish every possible input, full WCAG conformance, Firefox/WebKit coverage, load capacity or production suitability. The separate Cypress repository is future work.

@@ -140,6 +140,8 @@ See [coverage and limits](docs/USE-CASE-COVERAGE.md), [test strategy](docs/TEST-
 
 ## CI and artifacts
 
+The migrated framework passed its [GitHub baseline, evidence, three-window headed smoke and fault checks](https://github.com/atharvaborade/playwright-quality-lab/actions/runs/42121961009).
+
 GitHub Actions installs Node, Java, project dependencies and Chromium; executes the JavaScript checks, BDD baseline, evidence verification and fault experiments; generates Allure HTML; and uploads the reports even on failure. Open **Actions → Quality checks → a run → quality-evidence** to download the evidence. The CI bundle includes the self-contained Allure report; download a baseline trace through its attachments, then open that ZIP with Trace Viewer. Duplicate raw baseline attachments are omitted from the bundle. Local `reports/artifacts/` still contains the original scenario folders. CI artifacts are retained for three days; download any run you want to keep. Generated reports and local databases are ignored by Git.
 
 The original TypeScript tests have been replaced by JavaScript Cucumber scenarios. Dependency packages may ship their own type definitions; the authored application and framework files are JavaScript.
