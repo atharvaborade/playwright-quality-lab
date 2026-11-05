@@ -1,0 +1,31 @@
+{
+  "name": "playwright-quality-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Appointment booking application and risk-based Playwright quality engineering portfolio",
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "playwright test",
+    "test:api": "playwright test --project=api",
+    "test:ui": "playwright test --project=chromium",
+    "test:faults": "node scripts/check-faults.js",
+    "report": "playwright show-report",
+    "check": "tsc --noEmit",
+    "demo:capture": "node scripts/capture-demo.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@axe-core/playwright": "^4.10.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
