@@ -2,6 +2,10 @@
 
 Recorded 5 November 2026 in the managed development environment. These are local results, not a claim that GitHub Actions has already completed.
 
+## Prepublication recheck
+
+The publication recheck passed type checking, all24 baseline tests (8.4seconds locally), and both seeded-fault experiments. No application source changes were needed. GitHub-hosted results are tracked separately in the repository Actions tab.
+
 ## Baseline
 
 - Node.js v24.22.1

@@ -10,4 +10,4 @@ No paid services, employer code, or real customer data. This is a portfolio lab,
 
 ## Current status
 
-Steps 1–4 complete locally: 24 baseline checks pass and both fault experiments are detected. Product screenshots and walkthrough documentation are included. Step 5 is pending repository access: the supplied GitHub connection currently returns Repository not found for the expected new repository.
+Implementation, local validation, screenshots and documentation are complete:24 baseline checks pass and both fault experiments are detected. Source repository: https://github.com/atharvaborade/playwright-quality-lab. The Actions tab provides the current hosted verification status; local evidence is recorded separately in VALIDATION.md.
