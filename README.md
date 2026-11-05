@@ -1,5 +1,7 @@
 # Slotwise · Playwright Quality Engineering Lab
 
+[![Quality checks](https://github.com/atharvaborade/playwright-quality-lab/actions/workflows/quality.yml/badge.svg)](https://github.com/atharvaborade/playwright-quality-lab/actions/workflows/quality.yml)
+
 A working appointment-booking product paired with a risk-based automation suite. Built as an independent quality engineering portfolio project using synthetic data.
 
 **Focus:** demonstrate how tests protect booking integrity, account ownership and the user journey—and prove that selected tests detect deliberately introduced faults.
@@ -90,6 +92,6 @@ docs/                    Strategy, decisions, findings and walkthrough
 
 ## Scope and limitations
 
-This is a portfolio lab, not a production booking platform. Current browser execution targets Chromium. Automated accessibility scans do not establish full WCAG conformance. CI configuration is included; local results do not prove that a GitHub-hosted run has completed. See the strategy for uncovered risks and deployment limitations.
+This is a portfolio lab, not a production booking platform. Current browser execution targets Chromium. Automated accessibility scans do not establish full WCAG conformance. GitHub-hosted type checking, the24-test baseline suite and both seeded-fault experiments passed in [this verified run](https://github.com/atharvaborade/playwright-quality-lab/actions/runs/42113819326). See the strategy for uncovered risks and deployment limitations.
 
 No employer code, real customer data, paid services or invented performance metrics are included.

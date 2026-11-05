@@ -10,4 +10,4 @@ No paid services, employer code, or real customer data. This is a portfolio lab,
 
 ## Current status
 
-Implementation, local validation, screenshots and documentation are complete:24 baseline checks pass and both fault experiments are detected. Source repository: https://github.com/atharvaborade/playwright-quality-lab. The Actions tab provides the current hosted verification status; local evidence is recorded separately in VALIDATION.md.
+Implementation, local validation, screenshots and documentation are complete:24 baseline checks pass and both fault experiments are detected. Source repository: https://github.com/atharvaborade/playwright-quality-lab. All five delivery steps are complete. Hosted checks passed in [this run](https://github.com/atharvaborade/playwright-quality-lab/actions/runs/42113819326); local and hosted evidence are recorded separately in VALIDATION.md.

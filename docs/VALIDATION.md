@@ -1,6 +1,6 @@
 # Validation evidence
 
-Recorded 5 November 2026 in the managed development environment. These are local results, not a claim that GitHub Actions has already completed.
+Recorded 5 November 2026 in the managed development environment. These initial results are local; the hosted verification section below records the subsequent GitHub Actions result.
 
 ## Prepublication recheck
 
@@ -47,6 +47,10 @@ npm run test:faults
 
 Reports are regenerated under ignored `playwright-report/` and `test-results/`. The committed screenshots come from `npm run demo:capture`, which starts a separate temporary database and removes it afterward.
 
+## GitHub-hosted verification
+
+[Verified Quality checks run](https://github.com/atharvaborade/playwright-quality-lab/actions/runs/42113819326) for commit8bbf5ee completed successfully. The job ran type checking, the24-test baseline suite and both seeded-fault experiments. Its `quality-evidence` artifact contains reports and failure evidence from the intentional fault checks. Public application hosting remains separate from publishing source code.
+
 ## Not verified
 
-Firefox/WebKit, complete screen-reader accessibility, load/performance thresholds, public hosting, and a GitHub-hosted CI execution. See the test strategy for scope boundaries.
+Firefox/WebKit, complete screen-reader accessibility, load/performance thresholds, and public application hosting. See the test strategy for scope boundaries.
